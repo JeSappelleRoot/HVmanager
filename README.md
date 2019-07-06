@@ -30,8 +30,8 @@ function displayMenu() {
 
 
 # Define folder which contain VHD and VHDX
-# EDIT THIS VARIABLE
-$templateFolder = 'E:\Partition 2\WM'
+# EDIT THESE 3 VARIABLES
+$templateFolder = 'E:\WM'
 $configPath = 'D:\HYPERV\VMs'
 $vhdPath = 'D:\HYPERV\HDD'
 
@@ -93,7 +93,7 @@ Virtual switch used : Out switch
                                               __/ |          
                                              |___/           
  
-Creation of virtual machine : VM demon
+Creation of virtual machine : VM demo
 --------------------------------------
 [+] Create differencing disk
 [+] Successfully create virtual disk
