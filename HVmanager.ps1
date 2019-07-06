@@ -359,7 +359,7 @@ function displayMenu() {
 
 
 # Define folder which contain VHD and VHDX
-# EDIT THIS VARIABLE
+# EDIT THESE 3 VARIABLES
 $templateFolder = 'E:\Partition 2\WM'
 $configPath = 'D:\HYPERV\VMs'
 $vhdPath = 'D:\HYPERV\HDD'
