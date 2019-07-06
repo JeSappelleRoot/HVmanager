@@ -24,6 +24,22 @@ To use the script, you need to edit 3 variables on ```displayMenu``` function :
 >Virtual disks folder set in Hyper-V
 ![vhd](https://user-images.githubusercontent.com/52102633/60756645-2dc77000-a000-11e9-9f7c-5883662cd500.png)
 
+```
+function displayMenu() {
+#  Function to get user choice
+
+
+# Define folder which contain VHD and VHDX
+# EDIT THIS VARIABLE
+$templateFolder = 'E:\Partition 2\WM'
+$configPath = 'D:\HYPERV\VMs'
+$vhdPath = 'D:\HYPERV\HDD'
+
+[...]
+```
+
+
+
 ## Machine creation
 
 HVmanager will ask you informations about the new virtual machine to create : 
