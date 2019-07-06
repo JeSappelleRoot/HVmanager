@@ -254,7 +254,7 @@ function getInfo($name) {
 		Write-Host "- Number of VCPU :" (Get-VM $name).ProcessorCount
 		Write-Host "- Virtual machine from generation :" (Get-VM $name).Generation
 		Write-Host "- Virtual disk used :" (Get-VM $name  | Select-Object VMId | Get-VHD).Path
-		Write-Host "- Parent disk used :" (Get-VM 'Test JMO' | Select-Object VMid | Get-VHD).ParentPath
+		Write-Host "- Parent disk used :" (Get-VM $name | Select-Object VMid | Get-VHD).ParentPath
 		Write-Host "- Switch used :" (Get-VM $name).NetworkAdapters.SwitchName
 		Write-Host `n
 
@@ -294,7 +294,8 @@ function deleteMachine($name) {
 		Remove-VM $allVirtualMachine[$choice - 1]
 		Remove-Item -Path $config -Recurse
 		Remove-Item -Path $vhdPath -Recurse
-		
+		Write-Host "[+] Virtual machine $name successfully deleted"
+		Start-Sleep -Seconds 2
 		} 
 
 		return displayMenu
@@ -345,7 +346,7 @@ function checkConfig ($template,$config,$vhd) {
 
 
     return
-	
+
 	}
 
 	catch {$_.Exception.Message}
