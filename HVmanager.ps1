@@ -285,7 +285,8 @@ function deleteMachine($name) {
 		#Get config folder of virtual machine
 		$config = (Get-VM $name).Path
 		# Get virtual disk folder of virtual machine
-		$vhdPath = (Get-VM $name |`
+		$vhdPath = (
+                    Get-VM $name |`
 					Select-Object -Property VMid |`
 					Get-VHD | Split-Path -Parent
                     )
