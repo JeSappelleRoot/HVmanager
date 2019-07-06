@@ -7,6 +7,7 @@ With the script you can :
 - get information about a specific virtual machine
 - delete an inused virtual machine
 
+**HVmanager was writted with PowerShell 5.1, check your version with ```Get-Host``` if you have issue with the script**
 
 ## Configuration in the script
 
