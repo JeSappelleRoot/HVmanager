@@ -56,6 +56,13 @@ To get a quick creation, HVmanager create a differencing disk.
 The template disk is use for reading data needs by the guest system. The differencing disk will be used to write modifications.
 This method is very fast but performances are a little bit weak, because of constant reading and writting on 2 virtuals disks.
 
+
+HVmanager will create folders with the virtual machine name in : 
+- `$configPath` define in the displayMenu function
+- `$vhdPath` define in the displayMenu function
+
+
+
 **The differencing disk will have the same extension as the parent disk**
 
 > Resume of settings before create a machine
@@ -103,6 +110,8 @@ Creation of virtual machine : VM demo
 
 [+] Virtual machine successfully created
 ```
+
+
 
 ## Getting informations about a virtual machine
 
