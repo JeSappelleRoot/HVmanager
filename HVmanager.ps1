@@ -285,11 +285,11 @@ function deleteMachine($name) {
 		#Get config folder of virtual machine
 		$config = (Get-VM $name).Path
 		# Get virtual disk folder of virtual machine
-		$vhdPath = (
-					Get-VM $name |`
+		$vhdPath = (Get-VM $name |`
 					Select-Object -Property VMid |`
 					Get-VHD | Split-Path -Parent
-					)
+                    )
+
 		# Remove VM, config and virtual disk
 		Remove-VM $allVirtualMachine[$choice - 1]
 		Remove-Item -Path $config -Recurse
@@ -358,144 +358,142 @@ function displayMenu() {
 #  Function to get user choice
 
 
-# Define folder which contain VHD and VHDX
-# EDIT THESE 3 VARIABLES
-$templateFolder = 'E:\Partition 2\WM'
-$configPath = 'D:\HYPERV\VMs'
-$vhdPath = 'D:\HYPERV\HDD'
+    # Define folder which contain VHD and VHDX
+    # EDIT THESE 3 VARIABLES
+    $templateFolder = 'E:\Partition 2\WM'
+    $configPath = 'D:\HYPERV\VMs'
+    $vhdPath = 'D:\HYPERV\HDD'
 
-# Get defined folder by user before running script
-checkConfig $templateFolder $configPath $vhdPath
+    # Get defined folder by user before running script
+    checkConfig $templateFolder $configPath $vhdPath
 
-$loop = $true
-while ($loop) {
+    $loop = $true
+    while ($loop) {
 
-    displayBanner
+        displayBanner
 
-    "
-    1. Create a virtual machine
-    2. Information about a virtual machine
-    3. Delete a virtual machine
-    
-    q. Quit
-    
-    "
-    $choice = Read-Host "[?] What do you want to do "
+        "
+        1. Create a virtual machine
+        2. Information about a virtual machine
+        3. Delete a virtual machine
+        
+        q. Quit
+        
+        "
+        $choice = Read-Host "[?] What do you want to do "
 
-    if ($choice -ne '1' -and $choice -ne 2 -and $choice -ne 3 -and $choice -ne 'q') {
-        Write-Host "Please make a choice between 1 and 3, or q to quit HV-Manager"
-        Start-Sleep -Seconds 2
+        if ($choice -ne '1' -and $choice -ne 2 -and $choice -ne 3 -and $choice -ne 'q') {
+            Write-Host "Please make a choice between 1 and 3, or q to quit HV-Manager"
+            Start-Sleep -Seconds 2
+        }
+        else {break}
+
     }
-    else {break}
 
-}
+    switch ($choice) {
 
-switch ($choice) {
+        # Choice for virtual machine creation
+        '1' {
 
-    # Choice for virtual machine creation
-    '1' {
-
-        # Get all virtual disk available in template folder
-        $allVirtualDisks =  Get-ChildItem $templateFolder | `
-                            Where-Object {$_.Extension -match '.vhdx' -or $_.Extension -match '.vhd'} | `
-                            Select-Object -Property Name, BaseName, Extension, FullName
-        
-        
-        # Choose a template
-        $loop = $true
-        While ($loop -eq $true) {
-            displayBanner
+            # Get all virtual disk available in template folder
+            $allVirtualDisks =  Get-ChildItem $templateFolder | `
+                                Where-Object {$_.Extension -match '.vhdx' -or $_.Extension -match '.vhd'} | `
+                                Select-Object -Property Name, BaseName, Extension, FullName
             
-            $count = 1
-            foreach ($template in $allVirtualDisks.BaseName) {
-                "$count. " + $template
-                $count++
+            
+            # Choose a template
+            $loop = $true
+            While ($loop -eq $true) {
+                displayBanner
+                
+                $count = 1
+                foreach ($template in $allVirtualDisks.BaseName) {
+                    "$count. " + $template
+                    $count++
+                }
+                Write-Host ""
+                [int32]$choice = Read-Host "Which template use ? "
+                if (($choice -lt 1 -or $choice -gt $count - 1) -or ($choice.ToString() -notmatch '(^\d+$)')) {
+                    Write-Host "[!] Please make a choice between 1 and $($count - 1)"
+                    Start-Sleep -Seconds 2
+                }    
+                else {Break}
             }
-            Write-Host ""
-            [int32]$choice = Read-Host "Which template use ? "
-            if (($choice -lt 1 -or $choice -gt $count - 1) -or ($choice.ToString() -notmatch '(^\d+$)')) {
-                Write-Host "[!] Please make a choice between 1 and $($count - 1)"
-                Start-Sleep -Seconds 2
-            }    
-            else {Break}
+            
+            $chooseTemplate = ($allVirtualDisks[$choice - 1].FullName)
+            
+            # Configure virtual machine options (Name, CPU, RAM, switch...) and store values in hashtable
+            $characteristics = (setVM $chooseTemplate)
+            
+            # Create the virtual machine with all parameters
+            createVM $characteristics $configPath $vhdPath
+
         }
-        
-        $chooseTemplate = ($allVirtualDisks[$choice - 1].FullName)
-        
-        # Configure virtual machine options (Name, CPU, RAM, switch...) and store values in hashtable
-        $characteristics = (setVM $chooseTemplate)
-        
-        # Create the virtual machine with all parameters
-        createVM $characteristics $configPath $vhdPath
+
+        # If user want to get info about a virtual machine
+        '2' {
+
+            [array]$allVirtualMachine = (Get-VM).Name
+
+
+            $loop = $true
+
+            while ($loop) {
+                $count = 1
+                displayBanner
+                foreach ($virtualMachine in $allVirtualMachine) {
+                    Write-Host "$count. $VirtualMachine"
+                    $count ++
+                }
+                Write-Host `n
+                $choice = Read-Host "[?] Info about which virtual machine "
+                if ($choice -lt 1 -or $choice -ge $count) {
+                    Write-Host "[!] Please specify a choice between 1 and $($count - 1) or all"
+                    Start-Sleep -Seconds 2        
+                }
+
+                else {Break}
+            }
+
+            getInfo $allVirtualMachine[$choice - 1]
 
     }
 
+        # If user want to delete a virtual machine
+        '3' {
 
-    '2' {
+            [array]$allVirtualMachine = (Get-VM).Name
+            $loop = $true
 
-        [array]$allVirtualMachine = (Get-VM).Name
+            while ($loop) {
+                $count = 1
+                displayBanner
 
-
-        $loop = $true
-
-        while ($loop) {
-            $count = 1
-            displayBanner
-            foreach ($virtualMachine in $allVirtualMachine) {
-                Write-Host "$count. $VirtualMachine"
-                $count ++
+                foreach ($virtualMachine in $allVirtualMachine) {
+                    Write-Host "$count. $VirtualMachine"
+                    $count ++
+                }
+                Write-Host `n
+                $choice = Read-Host "[?] Which virtual machine delete "
+                if ($choice -lt 1 -or $choice -ge $count) {
+                    Write-Host "[!] Please specify a choice between 1 and $($count - 1) or all"
+                    Start-Sleep -Seconds 2        
+                }
+                else {Break}
             }
-            Write-Host `n
-            $choice = Read-Host "[?] Info about which virtual machine "
-            if ($choice -lt 1 -or $choice -ge $count) {
-                Write-Host "[!] Please specify a choice between 1 and $($count - 1) or all"
-                Start-Sleep -Seconds 2        
-            }
 
-            else {Break}
+            deleteMachine $allVirtualMachine[$choice - 1]
+
         }
 
-        getInfo $allVirtualMachine[$choice - 1]
-
-}
-
-
-    '3' {
-
-        [array]$allVirtualMachine = (Get-VM).Name
-         $loop = $true
-
-        while ($loop) {
-            $count = 1
-            displayBanner
-
-            foreach ($virtualMachine in $allVirtualMachine) {
-                Write-Host "$count. $VirtualMachine"
-                $count ++
-            }
-            Write-Host `n
-            $choice = Read-Host "[?] Which virtual machine delete "
-            if ($choice -lt 1 -or $choice -ge $count) {
-                Write-Host "[!] Please specify a choice between 1 and $($count - 1) or all"
-                Start-Sleep -Seconds 2        
-            }
-            else {Break}
-        }
-
-        deleteMachine $allVirtualMachine[$choice - 1]
+        # If user want to quit the script
+        'q' {Exit}
 
     }
 
-
-    'q' {Exit}
-
-}
-
-return
+    return
 }
    
-
-
 
 # -------------------------------------------------------------------------
 # -------------------------- Begin of the script --------------------------
