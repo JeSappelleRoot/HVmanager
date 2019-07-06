@@ -238,67 +238,79 @@ return displayMenu
 function getInfo($name) {
 #Function to display info about a specific virtual machine
 
-    displayBanner
+	try {
 
-    
-    $header = "Informations about $name virtual machine"
-    # Automatic header separator
-    $separator = '-' * $header.Length
-    Write-Host $header
-    Write-Host $separator`n
+		displayBanner
 
-    # Display info
-    Write-Host "- Virtual machine status :" (Get-VM $name).state
-    Write-Host "- Quantity of memory : " $((Get-VM $name).MemoryStartup / 1MB) "MB"
-    Write-Host "- Number of VCPU :" (Get-VM $name).ProcessorCount
-    Write-Host "- Virtual machine from generation :" (Get-VM $name).Generation
-    Write-Host "- Virtual disk used :" (Get-VM $name  | Select-Object VMId | Get-VHD).Path
-    Write-Host "- Parent disk used :" (Get-VM 'Test JMO' | Select-Object VMid | Get-VHD).ParentPath
-    Write-Host "- Switch used :" (Get-VM $name).NetworkAdapters.SwitchName
-    Write-Host `n
+		$header = "Informations about $name virtual machine"
+		# Automatic header separator
+		$separator = '-' * $header.Length
+		Write-Host $header
+		Write-Host $separator`n
 
-    $end = Read-Host "[+] Press enter to return at menu"
+		# Display info
+		Write-Host "- Virtual machine status :" (Get-VM $name).state
+		Write-Host "- Quantity of memory : " $((Get-VM $name).MemoryStartup / 1MB) "MB"
+		Write-Host "- Number of VCPU :" (Get-VM $name).ProcessorCount
+		Write-Host "- Virtual machine from generation :" (Get-VM $name).Generation
+		Write-Host "- Virtual disk used :" (Get-VM $name  | Select-Object VMId | Get-VHD).Path
+		Write-Host "- Parent disk used :" (Get-VM 'Test JMO' | Select-Object VMid | Get-VHD).ParentPath
+		Write-Host "- Switch used :" (Get-VM $name).NetworkAdapters.SwitchName
+		Write-Host `n
 
-    return displayMenu
+		$end = Read-Host "[+] Press enter to return at menu"
+
+		return displayMenu
+	}
+
+	catch {$_.Exception.Message}
+
 }
-
 # ---------------------------------------------------------------------------------------
 function deleteMachine($name) {
 #Function to delete a virtual machine
 
-    # Get state of virtual machine
-    # If virtual machine is running, delete is deny
-    $state = (Get-VM $name).State
-    if ($state -eq 'Running') {
-        Write-Host "`n[!] The virtual machine is running, stop it before suppression"
-        Start-Sleep -Seconds 2
-        return displayMenu
-    }
-    else {
-    #Else if virtual machine is not running
-    #Get config folder of virtual machine
-    $config = (Get-VM $name).Path
-    # Get virtual disk folder of virtual machine
-    $vhdPath = (
-                Get-VM $name |`
-                Select-Object -Property VMid |`
-                Get-VHD | Split-Path -Parent
-                )
-    # Remove VM, config and virtual disk
-    Remove-VM $allVirtualMachine[$choice - 1]
-    Remove-Item -Path $config -Recurse
-    Remove-Item -Path $vhdPath -Recurse
-    
-    } 
+	try {
 
-   
-    return displayMenu
+		# Get state of virtual machine
+		# If virtual machine is running, delete is deny
+		$state = (Get-VM $name).State
+		if ($state -eq 'Running') {
+			Write-Host "`n[!] The virtual machine is running, stop it before suppression"
+			Start-Sleep -Seconds 2
+			return displayMenu
+		}
+		else {
+		#Else if virtual machine is not running
+		#Get config folder of virtual machine
+		$config = (Get-VM $name).Path
+		# Get virtual disk folder of virtual machine
+		$vhdPath = (
+					Get-VM $name |`
+					Select-Object -Property VMid |`
+					Get-VHD | Split-Path -Parent
+					)
+		# Remove VM, config and virtual disk
+		Remove-VM $allVirtualMachine[$choice - 1]
+		Remove-Item -Path $config -Recurse
+		Remove-Item -Path $vhdPath -Recurse
+		
+		} 
+
+		return displayMenu
+	}
+
+	catch {$_.Exception.Message}
 }
+
+
 
 
 # ---------------------------------------------------------------------------------------
 function checkConfig ($template,$config,$vhd) {
 #Function to check the initial configuration
+
+	try {
 
     displayBanner
 
@@ -333,6 +345,10 @@ function checkConfig ($template,$config,$vhd) {
 
 
     return
+	
+	}
+
+	catch {$_.Exception.Message}
 }
 
 
