@@ -4,7 +4,7 @@
 
 # ---------------------------------------------------------------------------------------
 function displayBanner() {
-    # With a banner, it's always better ! \o/
+# With a banner, it's always better ! \o/
 
     Clear-Host
 
@@ -262,9 +262,12 @@ function getInfo($name) {
     return displayMenu
 }
 
+# ---------------------------------------------------------------------------------------
 function deleteMachine($name) {
 #Function to delete a virtual machine
 
+    # Get state of virtual machine
+    # If virtual machine is running, delete is deny
     $state = (Get-VM $name).State
     if ($state -eq 'Running') {
         Write-Host "`n[!] The virtual machine is running, stop it before suppression"
@@ -272,36 +275,80 @@ function deleteMachine($name) {
         return displayMenu
     }
     else {
-
+    #Else if virtual machine is not running
+    #Get config folder of virtual machine
     $config = (Get-VM $name).Path
+    # Get virtual disk folder of virtual machine
     $vhdPath = (
                 Get-VM $name |`
                 Select-Object -Property VMid |`
                 Get-VHD | Split-Path -Parent
                 )
+    # Remove VM, config and virtual disk
     Remove-VM $allVirtualMachine[$choice - 1]
     Remove-Item -Path $config -Recurse
     Remove-Item -Path $vhdPath -Recurse
     
     } 
 
-    
-
-
+   
     return displayMenu
 }
+
+
+# ---------------------------------------------------------------------------------------
+function checkConfig ($template,$config,$vhd) {
+#Function to check the initial configuration
+
+    displayBanner
+
+    #Initialize a error counter
+    $error = 0
+
+    # If the config folder does not exist
+    if (-not(Test-Path $config)) {
+        Write-Host "[!] The config folder $config does not exist"
+        $error ++
+    }
+    # If the virtual disk folder does not exist
+    if (-not(Test-Path $vhd)) {
+        Write-Host "[!] The virtual disk folder $vhd does not exist"
+        $error ++
+    }
+
+    # Get templates files
+    $files = (
+              Get-ChildItem $template -ErrorAction SilentlyContinue|`
+              Where {$_.Extension -match '.vhdx' -or $_.Extension -match '.vhd'}
+              )
+    # If no template detected
+    if (($files | Measure-Object).Count -lt 1) {
+        Write-Host "[!] No virtual machine templates detected"
+        $error ++
+    }
+
+    # If error greater than 0, errors detected
+    # Quit script !
+    if ($error -gt 0) {Exit}
+
+
+    return
+}
+
 
 # ---------------------------------------------------------------------------------------
 function displayMenu() {
 #  Function to get user choice
 
 
-        # Define folder which contain VHD and VHDX
-        # EDIT THIS VARIABLE
+# Define folder which contain VHD and VHDX
+# EDIT THIS VARIABLE
 $templateFolder = 'E:\Partition 2\WM'
 $configPath = 'D:\HYPERV\VMs'
 $vhdPath = 'D:\HYPERV\HDD'
 
+# Get defined folder by user before running script
+checkConfig $templateFolder $configPath $vhdPath
 
 $loop = $true
 while ($loop) {
@@ -423,11 +470,7 @@ switch ($choice) {
     }
 
 
-
-
-
     'q' {Exit}
-
 
 }
 
